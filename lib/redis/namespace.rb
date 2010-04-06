@@ -170,14 +170,16 @@ class Redis
     end
 
   private
+
     def add_namespace(key)
       return key unless key && @namespace
-
       case key
       when Array
         key.map {|k| add_namespace k}
       when Hash
         Hash[*key.map {|k, v| [ add_namespace(k), v ]}.flatten]
+      when NilClass
+        ''
       else
         "#{@namespace}:#{key}"
       end
@@ -185,15 +187,19 @@ class Redis
 
     def rem_namespace(key)
       return key unless key && @namespace
-
       case key
       when Array
         key.map {|k| rem_namespace k}
       when Hash
         Hash[*key.map {|k, v| [ rem_namespace(k), v ]}.flatten]
+      when NilClass
+        ''
       else
         key.to_s.gsub /^#{@namespace}:/, ""
       end
+
     end
+
   end
 end
+

@@ -22,6 +22,32 @@ describe "redis" do
     @redis.quit
   end
 
+  it "should be able to use an _empty_ (nil) namespace" do
+    @root = Redis::Namespace.new( nil , :redis => @redis )
+
+    @root['foo'].should == 'bar'
+    @root['foo'] = 'bob'
+    @root['foo'].should == 'bob'
+
+    @root.incr('counter', 2)
+    @root['counter'].to_i.should == 2
+    @redis['counter'].should == "2"
+    @root.type('counter').should == 'string'
+  end
+
+  it "should be able to use an _empty_ ('') namespace" do
+    @root = Redis::Namespace.new( nil , :redis => @redis )
+
+    @root['foo'].should == 'bar'
+    @root['foo'] = 'bob'
+    @root['foo'].should == 'bob'
+
+    @root.incr('counter', 2)
+    @root['counter'].to_i.should == 2
+    @redis['counter'].should == "2"
+    @root.type('counter').should == 'string'
+  end
+
   it "should be able to use a namespace" do
     @namespaced['foo'].should == nil
     @namespaced['foo'] = 'chris'
@@ -115,22 +141,22 @@ describe "redis" do
     @namespaced['foo'].should == 'chris'
   end
 
-  it "should support command aliases (delete)" do 
+  it "should support command aliases (delete)" do
     @namespaced.delete('foo')
     @redis.should_not have_key('ns:foo')
   end
 
-  it "should support command aliases (set_add)" do 
+  it "should support command aliases (set_add)" do
     @namespaced.set_add('bar', 'quux')
     @namespaced.smembers('bar').should include('quux')
   end
 
-  it "should support command aliases (push_head)" do 
+  it "should support command aliases (push_head)" do
     @namespaced.push_head('bar', 'quux')
     @redis.llen('ns:bar').should == 1
   end
 
-  it "should support command aliases (zset_add)" do 
+  it "should support command aliases (zset_add)" do
     @namespaced.zset_add('bar', 1, 'quux')
     @redis.zcard('ns:bar').should == 1
   end
@@ -142,3 +168,4 @@ describe "redis" do
     end
   end
 end
+
