@@ -35,6 +35,26 @@ describe "redis" do
     @namespaced.type('counter').should == 'string'
   end
 
+  it "should be able to use a namespace with a custom separator" do
+    @custom = Redis::Namespace.new(:ns, :redis => @redis, :separator => '|')
+
+    @custom.separator.should == '|'
+
+    @custom['foo'].should == nil
+    @custom['foo'] = 'chris'
+    @custom['foo'].should == 'chris'
+    @redis['foo'] = 'bob'
+    @redis['foo'].should == 'bob'
+    @redis['ns|foo'].should == 'chris'
+
+    @custom.incr('counter', 2)
+    @custom['counter'].to_i.should == 2
+    @redis['counter'].should == nil
+    @redis['ns|counter'].should == '2'
+    @custom.type('counter').should == 'string'
+    @redis.type('ns|counter').should == 'string'
+  end
+
   it "should be able to use a namespace with del" do
     @namespaced['foo'] = 1000
     @namespaced['bar'] = 2000
@@ -142,3 +162,4 @@ describe "redis" do
     end
   end
 end
+

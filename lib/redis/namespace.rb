@@ -126,10 +126,12 @@ class Redis
 
 
     attr_accessor :namespace
+    attr_reader :separator
 
     def initialize(namespace, options = {})
       @namespace = namespace
       @redis = options[:redis]
+      @separator = options[:separator] || ':'
     end
 
     # Ruby defines a now deprecated type method so we need to override it here
@@ -179,7 +181,7 @@ class Redis
       when Hash
         Hash[*key.map {|k, v| [ add_namespace(k), v ]}.flatten]
       else
-        "#{@namespace}:#{key}"
+        "#{@namespace}#{@separator}#{key}"
       end
     end
 
@@ -192,8 +194,9 @@ class Redis
       when Hash
         Hash[*key.map {|k, v| [ rem_namespace(k), v ]}.flatten]
       else
-        key.to_s.gsub /^#{@namespace}:/, ""
+        key.to_s.gsub /^#{@namespace}#{@separator}/, ""
       end
     end
   end
 end
+
